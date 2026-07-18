@@ -157,16 +157,39 @@ def parse(xml_bytes: bytes) -> list[dict]:
     return features
 
 
-def main() -> int:
-    src = sys.argv[1] if len(sys.argv) > 1 else FEED_URL
-    if src.startswith("http"):
-        req = urllib.request.Request(src, headers={"User-Agent": "Wattrip/traffic-pipeline"})
-        with urllib.request.urlopen(req, timeout=60) as resp:
-            xml_bytes = resp.read()
-    else:
+def fetch(src: str) -> bytes:
+    """Lit une URL (ou un fichier local). Robuste au gzip et à une réponse
+    HTML (redirection/erreur serveur) qui ferait planter le parseur XML."""
+    if not src.startswith("http"):
         with open(src, "rb") as fh:
-            xml_bytes = fh.read()
+            return fh.read()
+    req = urllib.request.Request(
+        src,
+        headers={
+            "User-Agent": "Wattrip/traffic-pipeline",
+            # Pas de gzip : le serveur DIR le sert parfois aux IP datacenter
+            # (runners GitHub), ce qui cassait le parseur (« invalid token »).
+            "Accept-Encoding": "identity",
+        },
+    )
+    with urllib.request.urlopen(req, timeout=60) as resp:
+        data = resp.read()
+    if data[:2] == b"\x1f\x8b":  # gzippé malgré tout -> on décompresse
+        import gzip
 
+        data = gzip.decompress(data)
+    head = data.lstrip()[:20].lower()
+    if head.startswith(b"<!doctype html") or head.startswith(b"<html"):
+        raise SystemExit(f"Réponse HTML (redirection/erreur serveur) pour {src}")
+    return data
+
+
+def main() -> int:
+    # Convention : [source] [sortie]. La source par défaut = le flux ; passer
+    # un chemin local pour rejouer hors ligne. ⚠️ NE PAS passer le fichier de
+    # sortie en 1er argument (ce serait pris pour la source).
+    src = sys.argv[1] if len(sys.argv) > 1 else FEED_URL
+    xml_bytes = fetch(src)
     features = parse(xml_bytes)
     fc = {
         "type": "FeatureCollection",

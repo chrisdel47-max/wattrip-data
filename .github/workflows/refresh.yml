@@ -23,7 +23,9 @@ jobs:
         with:
           python-version: "3.12"
       - name: Générer traffic.geojson depuis le flux DATEX II
-        run: python build_traffic_geojson.py traffic.geojson
+        # Sans argument : source = le flux DATEX II, sortie = traffic.geojson.
+        # NE PAS passer "traffic.geojson" ici — ce serait pris pour la SOURCE.
+        run: python build_traffic_geojson.py
       - name: Commit si le fichier a changé
         run: |
           git config user.name "wattrip-bot"
