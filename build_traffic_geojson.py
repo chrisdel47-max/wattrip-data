@@ -93,19 +93,54 @@ def is_ended(record: ET.Element) -> bool:
     return False
 
 
+import re
+
+# Descripteurs internes à l'exploitant (« DIR Ouest/District de Brest/CEI de
+# Melgven ») : du jargon d'astreinte, pas une info conducteur.
+_INTERNAL_RE = re.compile(r"\b(DIR\b|CEI\b|District\b|CIGT\b)", re.I)
+_DIRECTION_RE = re.compile(r"^De\s.+\svers\s.+", re.I)
+
+
+def _tidy(text: str) -> str:
+    """Lisse le jargon DATEX des localisations pour un humain pressé :
+    « Point particulier : début : situé 10204 m au sud de X, fin : … »
+    → « à 10 km au sud de X »."""
+    t = text.strip()
+    t = re.sub(r"^Point particulier\s*:\s*", "", t, flags=re.I)
+    t = re.sub(r"^d[ée]but\s*:\s*", "", t, flags=re.I)
+    # La borne de fin n'apporte rien à l'échelle d'une pastille sur la carte.
+    t = re.sub(r",?\s*fin\s*:.*$", "", t, flags=re.I | re.S)
+
+    def _round_m(m: re.Match) -> str:
+        meters = int(m.group(1))
+        if meters < 50:  # « à 0 m au nord de X » → « au nord de X »
+            return ""
+        return f"à {round(meters / 1000)} km" if meters >= 950 else f"à {meters} m"
+
+    t = re.sub(r"situ[ée]e?\s+(\d+)\s*m\b", _round_m, t, flags=re.I)
+    return re.sub(r"\s{2,}", " ", t).strip(" ,;")
+
+
 def description(record: ET.Element) -> str | None:
-    """Le commentaire 'description' en français ; sinon le locationDescriptor."""
+    """Le commentaire 'description' en français ; sinon une localisation
+    lissée (+ le sens « De X vers Y » si la place le permet)."""
     location_desc = None
+    direction = None
     for c in record.iter(q("generalPublicComment")):
         ctype = c.findtext(q("commentType"))
         val = french_value(c)
         if not val:
             continue
         if ctype == "description":
-            return val
-        if ctype == "locationDescriptor" and location_desc is None:
-            location_desc = val
-    return location_desc
+            return _tidy(val)
+        if ctype == "locationDescriptor":
+            if _DIRECTION_RE.match(val):
+                direction = direction or val.strip()
+            elif location_desc is None and not _INTERNAL_RE.search(val):
+                location_desc = _tidy(val)
+    if location_desc and direction and len(location_desc) + len(direction) < 100:
+        return f"{location_desc} · {direction}"
+    return location_desc or direction
 
 
 def road_number(record: ET.Element) -> str | None:
@@ -113,8 +148,6 @@ def road_number(record: ET.Element) -> str | None:
     if not rn:
         return None
     # "N0165" -> "N165" (zéros de tête entre lettre et chiffres, plus lisible)
-    import re
-
     m = re.match(r"([A-Za-z]+)0*(\d+)", rn)
     return f"{m.group(1)}{m.group(2)}" if m else rn
 

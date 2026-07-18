@@ -25,7 +25,14 @@ jobs:
       - name: Générer traffic.geojson depuis le flux DATEX II
         # Sans argument : source = le flux DATEX II, sortie = traffic.geojson.
         # NE PAS passer "traffic.geojson" ici — ce serait pris pour la SOURCE.
-        run: python build_traffic_geojson.py
+        # Tolérant : si le flux a un hoquet (indispo, HTML, gzip cassé), on
+        # n'échoue PAS le workflow (donc pas d'email d'échec) — le script ne
+        # touche au fichier qu'en cas de succès, on garde la dernière bonne
+        # version et l'heure suivante retentera.
+        run: |
+          python build_traffic_geojson.py || {
+            echo "::warning::Flux DATEX indisponible — on garde la version précédente."
+          }
       - name: Commit si le fichier a changé
         run: |
           git config user.name "wattrip-bot"
