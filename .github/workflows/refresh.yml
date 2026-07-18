@@ -1,0 +1,37 @@
+name: refresh traffic
+
+# La source DATEX II (agrégation) se rafraîchit à l'heure : inutile de
+# tourner plus souvent. :17 pour éviter la ruée du top-heure sur GitHub.
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh
+  cancel-in-progress: true
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Générer traffic.geojson depuis le flux DATEX II
+        run: python build_traffic_geojson.py traffic.geojson
+      - name: Commit si le fichier a changé
+        run: |
+          git config user.name "wattrip-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add traffic.geojson
+          if git diff --staged --quiet; then
+            echo "Aucun changement."
+          else
+            git commit -m "refresh $(date -u +%Y-%m-%dT%H:%MZ)"
+            git push
+          fi
