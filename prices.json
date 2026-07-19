@@ -1,0 +1,27 @@
+{
+  "generated": "2026-07-19",
+  "source": "Barèmes publics €/kWh DC sans abonnement, curation manuelle Wattrip (mise à jour : éditer ce fichier, git push). Clés = sous-chaînes minuscules du champ opérateur IRVE.",
+  "fallback": 0.50,
+  "prices": {
+    "ionity": 0.59,
+    "fastned": 0.59,
+    "tesla": 0.45,
+    "electra": 0.52,
+    "totalenergies": 0.52,
+    "allego": 0.59,
+    "power dot": 0.44,
+    "izivia": 0.47,
+    "lidl": 0.39,
+    "leclerc": 0.35,
+    "carrefour": 0.39,
+    "evzen": 0.45,
+    "iecharge": 0.39,
+    "atlante": 0.49,
+    "driveco": 0.45,
+    "easycharge": 0.48,
+    "engie": 0.50,
+    "freshmile": 0.50,
+    "r3": 0.49,
+    "bouygues": 0.45
+  }
+}
