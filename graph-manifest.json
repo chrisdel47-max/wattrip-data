@@ -1,0 +1,75 @@
+{
+    "version":  "v3",
+    "label":  "France (5 paliers peage)",
+    "baseUrl":  "https://github.com/chrisdel47-max/wattrip-data/releases/download/graph-v3/",
+    "files":  [
+                  {
+                      "name":  "edges",
+                      "bytes":  537919588
+                  },
+                  {
+                      "name":  "geometry",
+                      "bytes":  477102180
+                  },
+                  {
+                      "name":  "location_index",
+                      "bytes":  81789028
+                  },
+                  {
+                      "name":  "nodes",
+                      "bytes":  186646628
+                  },
+                  {
+                      "name":  "nodes_ch_car",
+                      "bytes":  93323364
+                  },
+                  {
+                      "name":  "nodes_ch_car_toll050",
+                      "bytes":  93323364
+                  },
+                  {
+                      "name":  "nodes_ch_car_toll065",
+                      "bytes":  93323364
+                  },
+                  {
+                      "name":  "nodes_ch_car_toll080",
+                      "bytes":  93323364
+                  },
+                  {
+                      "name":  "nodes_ch_car_toll090",
+                      "bytes":  93323364
+                  },
+                  {
+                      "name":  "properties",
+                      "bytes":  32868
+                  },
+                  {
+                      "name":  "shortcuts_car",
+                      "bytes":  286261348
+                  },
+                  {
+                      "name":  "shortcuts_car_toll050",
+                      "bytes":  308281444
+                  },
+                  {
+                      "name":  "shortcuts_car_toll065",
+                      "bytes":  309330020
+                  },
+                  {
+                      "name":  "shortcuts_car_toll080",
+                      "bytes":  308281444
+                  },
+                  {
+                      "name":  "shortcuts_car_toll090",
+                      "bytes":  309330020
+                  },
+                  {
+                      "name":  "string_index_keys",
+                      "bytes":  8292
+                  },
+                  {
+                      "name":  "string_index_vals",
+                      "bytes":  72351844
+                  }
+              ]
+}
